@@ -14,7 +14,10 @@ class HashTable:
     '''
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
-        self.storage = [None] * capacity #storage list with size = capacity and each element initialized to None
+
+        #storage list with size = capacity and each element initialized to None
+        #this is where we will store all of the data
+        self.storage = [None] * capacity 
 
     #A hashing function takes a key and returns an index into the underlying array.
     def _hash(self, key):
@@ -23,18 +26,8 @@ class HashTable:
 
         You may replace the Python hash with DJB2 as a stretch goal.
         '''
-        #Turn the key into a list of bytes by calling key.encode(). 
-        #.encode() is a string method that converts a string into its corresponding bytes, 
-        # a list-like object with the numerical representation of each character in the string.
         
-        #key_bytes = key.encode()
-        #key_bytes = hash(key)
-
-        #Turn the bytes object into a hash code by calling sum() on key_bytes. Save the result 
-        # from that into a variable called hash_code.
-        #hash_code = sum(key_bytes)
-
-        #return hash_code
+        #use python's build in hash method
         return hash(key)
 
 
@@ -56,6 +49,7 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         within the storage capacity of the hash table.
         '''
+        #modulize the hash by the size of the linked list
         return self._hash(key) % self.capacity
 
     """
@@ -70,31 +64,42 @@ class HashTable:
 
         Fill this in.
         '''
-        array_index = self._hash_mod(self._hash(key))
+
+        #plug the key into _hash_mod to generate an index to insert the value
+        list_index = self._hash_mod(key)
 
         # Our first step in implementing a collision strategy.
-        # After finding the array_index, we want to do a check of the content that’s currently at 
-        # self.storage[array_index].
-        # In order to avoid overwriting the wrong key, check the existing value in the array at 
-        # self.storage[array_index]. Save this into current_array_value.
-        current_array_value = self.storage[array_index]
+        # After finding the list_index, we want to do a check of the content that’s currently at 
+        # self.storage[list_index].
+        # In order to avoid overwriting the wrong key, check the existing value in the list at 
+        # self.storage[list_index]. Save this into current_node.
+        current_node = self.storage[list_index]
 
-        #if there are no contents at current_array_value, we want to store the key and the value instead 
-        # of just the key if current_array_value is equal to None. 
-        # Instead of just saving value, save [key, value] to the array.
-        if current_array_value is None:
-            self.storage[array_index] = [key, value]
+        #if there are no contents or current_node is equal to none, 
+        # we want to store the key and the value instead of just the key. 
+        # Instead of just saving value, save (key, value) to the list.
+        if current_node is None:
+            self.storage[list_index] = LinkedPair(key, value)
             return
 
-        #If current_array_value already has contents, check if the saved key is different from the key 
-        # we are currently processing. If the keys are the same, overwrite the array value.
-        if current_array_value[0] == key:
-            self.storage[array_index] = [key,value]
+        #If current_node_value already has contents, check if the saved key is different from the key 
+        # we are currently processing. If the keys are the same, overwrite the list value.
+        if current_node.key == key:
+            self.storage[list_index] = LinkedPair(key, value)
             return        
 
-        # If the keys are different, we’re going to implement linked list chaining
-        # current_array_value currently holds different key
-        return
+        # If the keys are different or (current_node) holds a different key, 
+        # we’re going to implement linked list chaining        
+        while True:
+                #if the current node in the "inner linked list" is None, add the key, value pair
+                if current_node.next is None: 
+                    current_node.next = LinkedPair(key, value)
+                #if the current node key in the "inner linked list" is the same as the key we are
+                #currently processing, overwrite the node value
+                if current_node.key == key:
+                    current_node.next = LinkedPair(key, value)
+                    break
+                current_node = current_node.next
 
 
     def remove(self, key):
@@ -119,23 +124,27 @@ class HashTable:
 
         Fill this in.
         '''
-        array_index = self._hash_mod(self._hash(key))
+        #plug the key into _hash_mod to generate an index to retrieve the value from
+        list_index = self._hash_mod(self._hash(key))
 
-        #after finding the array index, we want to check to make sure that the index corresponds to the key 
-        # we’re looking for. Save the array value at our compressed hash code into possible_return_value.
-        possible_return_value = self.storage[array_index]
+        #after finding the list index, we want to check to make sure that the index corresponds to the key 
+        # we’re looking for. Save the list value at our compressed hash code into possible_return_node.
+        possible_return_node = self.storage[list_index]
 
         #Instead of just returning the array’s contents at that index, check if possible_return_value is None. 
         #If so, return None.
-        if possible_return_value is None:
+        if possible_return_node is None:
             return None
         else:
-        #If possible_return_value is not None, check if the first element in possible_return_value (index 0) 
-        # is the same as key. If so, return possible_return_value[1], the value.
-            if possible_return_value[0] == key:
-                return possible_return_value[1]
+        #If possible_return_node is not None, check if the first element in possible_return_node 
+        # is the same as key. If so, return possible_return_node.value, the value.
+            while True:
+                if possible_return_node.key == key:
+                    return possible_return_node.value
+                possible_return_node = possible_return_node.next
 
         # possible_return_value holds different key
+        print("ERROR")
         return
 
 
