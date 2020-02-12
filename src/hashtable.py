@@ -157,16 +157,17 @@ class HashTable:
 
         #If the value of the list at the hash function’s returned index is empty, return None
         if current_list_value is None:            
-            return current_list_value
+            return None
 
         #If the key at the hash function’s returned index matches the provided key
         if current_list_value.key == key:
             #place the value to be removed in a temp variable before the pointers are removed
             removed = current_list_value
-            #removes the pointer at self.storage[list_index] to the next node before it is removed
+            #removes current_list_value's pointer to the next node before it is removed
             self.storage[list_index] = current_list_value.next
             #return the value for the given key
             return removed.value
+            
         
         #if the current_list_value is not None or doesn't match the key
         #set the current_list_value.next to current_node while traversing the inner linked list
@@ -178,14 +179,16 @@ class HashTable:
             if current_node.key == key:
                 #place the value to be removed in a temp variable before the pointers are removed
                 removed = current_node
-                #removes current node pointer to the next node before it is removed
-                current_node = current_node.next
+                #removes current_list_value next pointer to current_node.next before it is removed
+                current_list_value.next = current_node.next
                 #return the value of the removed node
-                return removed.value                    
+                return removed.value                  
             
+            #set the current_list_value to point to the current_node
+            current_list_value = current_node
+
             #set the current_node to the next node in the inner list      
             current_node = current_node.next
-
 
     """
     calculate the array index in the same way insert does and then retrieve and return the value 
@@ -234,8 +237,9 @@ class HashTable:
 
         self.storage = [None] * self.capacity
 
-        for item in old_storage:
-            
+        for item in old_storage:         
+
+            #change the name to node when traversing a singly linked list
             node = item
 
             while node is not None:
